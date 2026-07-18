@@ -122,6 +122,23 @@ def health():
     return jsonify({"status": "ok", "loaded_models": list(_loaded_models.keys())})
 
 
+@app.route("/debug", methods=["GET"])
+def debug():
+    """임시 디버그용: 서버가 실제로 보고 있는 폴더 구조를 확인한다.
+    문제 해결 후에는 이 라우트를 지워도 된다."""
+    cwd = os.getcwd()
+    root_files = os.listdir(".")
+    models_files = os.listdir("models") if os.path.isdir("models") else "models 폴더 없음"
+    return jsonify({
+        "현재_작업_폴더": cwd,
+        "최상위_파일목록": root_files,
+        "models_폴더_안": models_files,
+    })
+
+
 if __name__ == "__main__":
     load_all_models()
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Render 같은 배포 서비스는 PORT 환경변수로 포트 번호를 알려준다.
+    # 로컬 컴퓨터에서 실행할 땐 환경변수가 없으니 그냥 5000번을 쓴다.
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
